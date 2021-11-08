@@ -76,7 +76,7 @@ async def next_page(bot, query):
 
     ident, req, key, offset = query.data.split("_")
     if int(req) not in [query.from_user.id, 0]:
-        return await query.answer("oKda", show_alert=True)
+        return await query.answer("നിനക്ക് മൂവി വേണമെങ്കിൽ അക്ഷരം തെറ്റാതെ ഇംഗിഷിൽ മൂവിന്റെ പേര് അയക്ക്😁", show_alert=True)
     try:
         offset = int(offset)
     except:
@@ -682,7 +682,7 @@ async def advantage_spell_chok(msg):
     g_s += await search_gagala(msg.text)
     gs_parsed = []
     if not g_s:
-        k = await msg.reply("I couldn't find any movie in that name.")
+        k = await msg.reply("നിങ്ങൾ ചോദിക്കുന്ന മൂവി ഇതിലുണ്ടോന്ന് ഉറപ്പ് വരുത്തുക.")
         await asyncio.sleep(8)
         await k.delete()
         return
