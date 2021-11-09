@@ -722,4 +722,44 @@ async def advantage_spell_chok(msg):
     btn.append([InlineKeyboardButton(text="Close", callback_data=f'spolling#{user}#close_spellcheck')])
     await msg.reply("I couldn't find anything related to that\nDid you mean any one of these?", reply_markup=InlineKeyboardMarkup(btn))
     
+    async def auto_filter(client, message):
+    if re.findall("((^\/|^,|^!|^\.|^[\U0001F600-\U000E007F]).*)", message.text):
+        return
+    if 2 < len(message.text) < 100:    
+        btn = []
+        search = message.text
+        files, offset, total_results = await get_search_results(search.lower(), offset=0)
+        if files:
+            for file in files:
+                file_id = file.file_id
+                btn.append(
+                    [InlineKeyboardButton(text=f"{file.file_name}", callback_data=f'files#{file_id}'), InlineKeyboardButton(text=f"{get_size(file.file_size)}", callback_data=f'files_#{file_id}')]
+                    )
+        if not btn:
+            return
+
+        if offset != "":
+            key = f"{message.chat.id}-{message.message_id}"
+            BUTTONS[key] = search
+            req = message.from_user.id or 0
+            btn.append(
+                [InlineKeyboardButton(text=f"🗓 1/{round(int(total_results)/10)}",callback_data="pages"), InlineKeyboardButton(text="NEXT ⏩",callback_data=f"next_{req}_{key}_{offset}")]
+            )
+        else:
+            btn.append(
+                [InlineKeyboardButton(text="🗓 1/1",callback_data="pages")]
+            )
+        imdb=await get_poster(search)
+        if imdb and imdb.get('poster'):
+            await message.reply_photo(photo=imdb.get('poster'), caption=f"<b>🎬 Title: <a href={imdb['url']}>{imdb.get('title')}</a>\n🎭 Genres: {imdb.get('genres')}\n🌟 Rating: <a href={imdb['url']}/ratings>{imdb.get('rating')}/10</a>\n🔰 𝖢𝖺𝗌𝗍: <a href={imdb['url']}>{imdb.get('actors')}</a>\n🗳️ 𝖵𝗈𝗍𝖾𝗌 : {imdb.get('votes')}\n🎙️ 𝖫𝖺𝗇𝗀𝗎𝖺𝗀𝖾𝗌: {imdb.get('language')}\n✍️ 𝖣𝗂𝗋𝖾𝖼𝗍𝗈𝗋 : <a href={imdb['url']}>{imdb.get('director')}</a>\n📆 Release: <a href={imdb['url']}/releaseinfo>{imdb.get('year')}</a>\n⏱ Duration : {imdb.get('duration')}\n🌎 𝖢𝗈𝗎𝗇𝗍𝗋𝗒 𝗈𝖿 𝗈𝗋𝗂𝗀𝗂𝗇: {imdb.get('country')}\n🗣️ Requested BY {message.from_user.mention}\n\n★ {message.chat.title} ♻️</b>", reply_markup=InlineKeyboardMarkup(btn))
+            await asyncio.sleep(50)
+            await message.delete()
+        elif imdb:
+            await message.reply_text(f"<b>🎬 Title: <a href={imdb['url']}>{imdb.get('title')}</a>\n🎭 Genres: {imdb.get('genres')}\n🌟 Rating: <a href={imdb['url']}/ratings>{imdb.get('rating')}/10</a>\n🔰 𝖢𝖺𝗌𝗍: <a href={imdb['url']}>{imdb.get('actors')}</a>\n🗳️ 𝖵𝗈𝗍𝖾𝗌 : {imdb.get('votes')}\n🎙️ 𝖫𝖺𝗇𝗀𝗎𝖺𝗀𝖾𝗌: {imdb.get('language')}\n✍️ 𝖣𝗂𝗋𝖾𝖼𝗍𝗈𝗋 : <a href={imdb['url']}>{imdb.get('director')}</a>\n📆 Release: <a href={imdb['url']}/releaseinfo>{imdb.get('year')}</a>\n⏱ Duration : {imdb.get('duration')}\n🌎 𝖢𝗈𝗎𝗇𝗍𝗋𝗒 𝗈𝖿 𝗈𝗋𝗂𝗀𝗂𝗇: {imdb.get('country')}\n🗣️ Requested BY {message.from_user.mention}\n\n★ {message.chat.title} ♻️</b>", reply_markup=InlineKeyboardMarkup(btn))
+            await asyncio.sleep(50)
+            await message.delete()
+        else:
+            await message.reply_text(f"<b>Here is What I Found In My Database For Your Query {search} ‌‎ </b>", reply_markup=InlineKeyboardMarkup(btn))
+            await asyncio.sleep(50)
+            await message.delete()
 
